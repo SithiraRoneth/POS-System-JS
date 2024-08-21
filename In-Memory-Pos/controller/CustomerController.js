@@ -33,6 +33,7 @@ $('#tblCustomer').on('click', 'tr', function () {
     $("#txtCustomerSalary").val(customerSalary);
 
     changeTextFieldColorsToBack([customerIDField, customerNameField, customerAddressField, customerSalaryField]);
+
 });
 
 //  Save customer
@@ -58,8 +59,8 @@ $("#btnSaveCustomer").click(function () {
                 url: "http://localhost:8080/customer",
                 type: "POST",
                 data: customerJson,
-                headers:{"Content-Type" : "application/json"},
-                success:(res) =>{
+                headers: {"Content-Type": "application/json"},
+                success: (res) => {
                     console.log(JSON.stringify(res))
                     Swal.fire({
                         title: "Saved Successfully",
@@ -68,7 +69,7 @@ $("#btnSaveCustomer").click(function () {
                     })
                     getAllCustomers()
                 },
-                error : (res) =>{
+                error: (res) => {
                     console.error(res)
                     Swal.fire({
                         title: "Oops Failed",
@@ -78,7 +79,23 @@ $("#btnSaveCustomer").click(function () {
                 }
             })
         } else {
-            alert("Same ID !");
+            Swal.fire({
+                title: "Same Customer Id",
+                showClass: {
+                    popup: `
+      animate__animated
+      animate__fadeInUp
+      animate__faster
+    `
+                },
+                hideClass: {
+                    popup: `
+      animate__animated
+      animate__fadeOutDown
+      animate__faster
+    `
+                }
+            });
         }
     } else {
         Swal.fire({
@@ -95,7 +112,7 @@ $("#btnSaveCustomer").click(function () {
 });
 
 // update customer
-$('#btnUpdateCustomer').click(function () {
+/*$('#btnUpdateCustomer').click(function () {
     if (checkValidCustomer()) {
         // Get data
         let id = $("#txtCustomerID").val();
@@ -126,7 +143,52 @@ $('#btnUpdateCustomer').click(function () {
     }
     getAllCustomers();
     clearAllCustomerFields();
+});*/
+$('#btnUpdateCustomer').click(function () {
+    if (checkValidCustomer()) {
+        // Get data
+        let id = $("#txtCustomerID").val();
+        let name = $("#txtCustomerName").val();
+        let address = $("#txtCustomerAddress").val();
+        let salary = $("#txtCustomerSalary").val();
+
+        // Create the customer object to send to the server
+        let customerData = {
+            id: id,
+            name: name,
+            address: address,
+            salary: salary
+        };
+
+        // Confirm update
+        let confirmUpdate = confirm("Do you want to update this customer?");
+        if (confirmUpdate) {
+            // Make an AJAX request to update the customer
+            $.ajax({
+                url: "http://localhost:8080/customer", // Assuming the endpoint is /customer
+                type: "PUT", // Use PUT method
+                contentType: "application/json",
+                data: JSON.stringify(customerData), // Convert JS object to JSON
+                success: function (response) {
+                    Swal.fire({
+                        title: "Updated",
+                        text: "",
+                        icon: "success"
+                    })
+                    getAllCustomers(); // Refresh the customer table
+                    clearAllCustomerFields(); // Clear input fields
+                },
+                error: function (xhr, status, error) {
+                    console.error("Failed to update customer:", error);
+                    alert("Failed to update customer!");
+                }
+            });
+        }
+    } else {
+        alert("Invalid customer details! Please check your inputs.");
+    }
 });
+
 
 /*function getAllCustomers() {
     let tBody = $("#tblCustomer");
@@ -157,7 +219,7 @@ function getAllCustomers() {
         url: "http://localhost:8080/customer", // The URL to the backend endpoint
         type: "GET", // HTTP method
         contentType: "application/json", // Expected response content type
-        success: function(customers) {
+        success: function (customers) {
             // Iterate over the list of customers and append each to the table
             for (let i = 0; i < customers.length; i++) {
                 let tr = $(`<tr>
@@ -169,7 +231,7 @@ function getAllCustomers() {
                 tBody.append(tr);
             }
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             console.error("Failed to fetch customers: ", error);
         }
     });
@@ -243,29 +305,41 @@ function clearAllCustomerFields() {
 }
 
 // button delete
+
 $('#btnDeleteCustomer').click(function () {
     if (checkValidCustomer()) {
         let selectedID = $("#txtCustomerID").val();
 
-        // search matching ID from arraylist, and delete the object with that id
-        for (let i = 0; i < customerDB.length; i++) {
-            if (selectedID === customerDB[i].id) {
-                // Delete the object from the array
-                let b = confirm("Do you want to delete?");
-                if (b) {
-                    customerDB.splice(i, 1);
-                    loadAllCusIDs();
-                    break; // Exit the loop
-                }
-                break; // Exit the loop
+        if (selectedID) {
+            let confirmDelete = confirm("Do you want to delete this customer?");
+            if (confirmDelete) {
+                // Make an AJAX request to delete the customer
+                $.ajax({
+                    url: "http://localhost:8080/customer?id=" + selectedID, // Append the customer ID to the URL
+                    type: "DELETE", // Use DELETE method
+                    success: function (response) {
+                        /*alert(response); */// Notify the user about the deletion status
+                        Swal.fire({
+                            title: "Deleted",
+                            text: "",
+                            icon: "success"
+                        })
+                        getAllCustomers(); // Refresh the customer table
+                        clearAllCustomerFields(); // Clear input fields
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Failed to delete customer:", error);
+                        alert("Failed to delete customer!");
+                    }
+                });
             }
+        } else {
+            alert("No customer selected!");
         }
     } else {
-        alert("Try again !");
+        alert("Invalid customer details! Please check your inputs.");
     }
-
     // update table
-    getAllCustomers();
     clearAllCustomerFields()
 });
 
