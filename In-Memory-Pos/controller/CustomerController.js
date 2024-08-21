@@ -37,27 +37,58 @@ $('#tblCustomer').on('click', 'tr', function () {
 
 //  Save customer
 $("#btnSaveCustomer").click(function () {
-    if(checkValidCustomer()){
+    if (checkValidCustomer()) {
         let customerID = $("#txtCustomerID").val();
         let customerName = $("#txtCustomerName").val();
         let customerAddress = $("#txtCustomerAddress").val();
         let customerSalary = $("#txtCustomerSalary").val();
 
-        let newCustomer = Object.assign({}, customer);
+        const newCustomer = Object.assign({}, customer);
         newCustomer.id = customerID;
         newCustomer.name = customerName;
         newCustomer.address = customerAddress;
         newCustomer.salary = customerSalary;
 
         if (!checkExistCustomer(newCustomer.id)) {
-            customerDB.push(newCustomer);
+            const customerJson = JSON.stringify(newCustomer);
+            console.log(customerJson)
             loadAllCusIDs();
+
+            $.ajax({
+                url: "http://localhost:8080/customer",
+                type: "POST",
+                data: customerJson,
+                headers:{"Content-Type" : "application/json"},
+                success:(res) =>{
+                    console.log(JSON.stringify(res))
+                    Swal.fire({
+                        title: "Saved Successfully",
+                        text: "",
+                        icon: "success"
+                    })
+                    getAllCustomers()
+                },
+                error : (res) =>{
+                    console.error(res)
+                    Swal.fire({
+                        title: "Oops Failed",
+                        text: "Invalid Customer type",
+                        icon: "error"
+                    })
+                }
+            })
+
         } else {
             alert("Same ID !");
         }
-    }else {
-        alert("Try again !");
+    } else {
+        Swal.fire({
+            title: "Oops Failed",
+            text: "Invalid Customer type",
+            icon: "error"
+        })
     }
+
     getAllCustomers();
     clearAllCustomerFields();
 
@@ -66,7 +97,7 @@ $("#btnSaveCustomer").click(function () {
 
 // update customer
 $('#btnUpdateCustomer').click(function () {
-    if(checkValidCustomer()) {
+    if (checkValidCustomer()) {
         // Get data
         let id = $("#txtCustomerID").val();
         let name = $("#txtCustomerName").val();
@@ -91,14 +122,14 @@ $('#btnUpdateCustomer').click(function () {
                 }
             }
         }
-    }else {
+    } else {
         alert("Try again !");
     }
     getAllCustomers();
     clearAllCustomerFields();
 });
 
-function getAllCustomers() {
+/*function getAllCustomers() {
     let tBody = $("#tblCustomer");
 
     // Clear table
@@ -114,7 +145,37 @@ function getAllCustomers() {
                    </tr>`);
         tBody.append(tr);
     }
+}*/
+
+function getAllCustomers() {
+    let tBody = $("#tblCustomer");
+
+    // Clear table
+    tBody.empty();
+
+    // Make an AJAX request to the backend to get all customers
+    $.ajax({
+        url: "http://localhost:8080/customer", // The URL to the backend endpoint
+        type: "GET", // HTTP method
+        contentType: "application/json", // Expected response content type
+        success: function(customers) {
+            // Iterate over the list of customers and append each to the table
+            for (let i = 0; i < customers.length; i++) {
+                let tr = $(`<tr>
+                                <td>${customers[i].id}</td>
+                                <td>${customers[i].name}</td>
+                                <td>${customers[i].address}</td>
+                                <td>${customers[i].salary}</td>
+                            </tr>`);
+                tBody.append(tr);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Failed to fetch customers: ", error);
+        }
+    });
 }
+
 
 $('#btnSearchCustomer').click(function () {
     let searchTxt = $("#txtSearchCus").val();
@@ -184,7 +245,7 @@ function clearAllCustomerFields() {
 
 // button delete
 $('#btnDeleteCustomer').click(function () {
-    if(checkValidCustomer()) {
+    if (checkValidCustomer()) {
         let selectedID = $("#txtCustomerID").val();
 
         // search matching ID from arraylist, and delete the object with that id
@@ -200,7 +261,7 @@ $('#btnDeleteCustomer').click(function () {
                 break; // Exit the loop
             }
         }
-    }else {
+    } else {
         alert("Try again !");
     }
 

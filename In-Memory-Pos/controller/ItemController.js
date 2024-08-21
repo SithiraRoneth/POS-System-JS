@@ -27,21 +27,50 @@ $("#btnSaveItem").click(function () {
         let itemQty = $("#txtItemQTY").val();
         let itemUnitPrice = $("#txtItemPrice").val();
 
-        let newItem = Object.assign({}, item);
+        const newItem = Object.assign({}, item);
         newItem.code = itemCode;
         newItem.itemName = itemName;
         newItem.qtyOnHand = itemQty;
         newItem.unitPrice = itemUnitPrice;
 
         if (!checkExistItem(newItem.code)) {
-            itemDB.push(newItem);
+            const itemJson = JSON.stringify(newItem);
+            console.log("Item set", itemJson);
             loadAllItemCodes();
+
+            $.ajax({
+                url: "http://localhost:8080/item",
+                type: "POST",
+                data: itemJson,
+                headers: { "Content-Type": "application/json" },
+                success: (res) => {
+                    console.log(JSON.stringify(res));
+                    Swal.fire({
+                        title: "Saved Successfully",
+                        text: "",
+                        icon: "success"
+                    });
+                },
+                error: (res) => {
+                    console.error(res);
+                    Swal.fire({
+                        title: "Oops Failed",
+                        text: "An error occurred while saving the item",
+                        icon: "error"
+                    });
+                }
+            });
         } else {
             alert("Same Code !");
         }
     } else {
-        alert("Try again !");
+        Swal.fire({
+            title: "Oops Failed",
+            text: "Invalid Item type",
+            icon: "error"
+        });
     }
+
     getAllItems();
     clearAllItemFields();
 
