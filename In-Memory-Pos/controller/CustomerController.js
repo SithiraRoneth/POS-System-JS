@@ -77,7 +77,6 @@ $("#btnSaveCustomer").click(function () {
                     })
                 }
             })
-
         } else {
             alert("Same ID !");
         }
