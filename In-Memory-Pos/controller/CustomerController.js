@@ -331,8 +331,7 @@ $('#btnDeleteCustomer').click(function () {
                         console.error("Failed to delete customer:", error);
                         alert("Failed to delete customer!");
                     }
-                });
-            }
+                });            }
         } else {
             alert("No customer selected!");
         }

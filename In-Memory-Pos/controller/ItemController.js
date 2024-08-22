@@ -6,8 +6,8 @@ $('#tblItem').on('click', 'tr', function () {
     // Get the data from the selected row
     let itemCode = $(this).find('td:eq(0)').text();
     let itemName = $(this).find('td:eq(1)').text();
-    let itemQty = $(this).find('td:eq(2)').text();
-    let itemUnitPrice = $(this).find('td:eq(3)').text();
+    let itemQty = $(this).find('td:eq(3)').text();
+    let itemUnitPrice = $(this).find('td:eq(2)').text();
 
     // Set the values to the fields
     $("#txtItemCode").val(itemCode);
@@ -42,7 +42,7 @@ $("#btnSaveItem").click(function () {
                 url: "http://localhost:8080/item",
                 type: "POST",
                 data: itemJson,
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 success: (res) => {
                     console.log(JSON.stringify(res));
                     Swal.fire({
@@ -50,6 +50,8 @@ $("#btnSaveItem").click(function () {
                         text: "",
                         icon: "success"
                     });
+                    getAllItems();
+                    clearAllItemFields();
                 },
                 error: (res) => {
                     console.error(res);
@@ -71,9 +73,6 @@ $("#btnSaveItem").click(function () {
         });
     }
 
-    getAllItems();
-    clearAllItemFields();
-
     $("#txtItemCode").focus();
 });
 
@@ -86,29 +85,39 @@ $('#btnUpdateItem').click(function () {
         let itemQty = $("#txtItemQTY").val();
         let itemUnitPrice = $("#txtItemPrice").val();
 
-        // Set new data to existing object (using id)
-        for (let i = 0; i < itemDB.length; i++) {
-            if (itemCode === itemDB[i].code) {
-                // Confirm update
-                let confirmUpdate = confirm("Do you want to update?");
+        let itemData = {
+            code: itemCode,
+            itemName: itemName,
+            qtyOnHand: itemQty,
+            unitPrice: itemUnitPrice
+        };
 
-                if (confirmUpdate) {
-                    // Update the object in the array
-                    itemDB[i].itemName = itemName;
-                    itemDB[i].qtyOnHand = itemQty;
-                    itemDB[i].unitPrice = itemUnitPrice;
 
-                    loadAllItemCodes();
-                    // Exit the loop
-                    break;
+        let confirmUpdate = confirm("Do you want to update this item?");
+        if (confirmUpdate){
+            $.ajax({
+                url: "http://localhost:8080/item", // Assuming the endpoint is /customer
+                type: "PUT", // Use PUT method
+                contentType: "application/json",
+                data: JSON.stringify(itemData), // Convert JS object to JSON
+                success: function (response) {
+                    Swal.fire({
+                        title: "Updated",
+                        text: "",
+                        icon: "success"
+                    })
+                    getAllItems(); // Refresh the item table
+                    clearAllItemFields(); // Clear input fields
+                },
+                error: function (xhr, status, error) {
+                    console.error("Failed to update item:", error);
+                    alert("Failed to update !");
                 }
-            }
+            });
         }
     } else {
-        alert("Try again !");
+        alert("Invalid item details");
     }
-    getAllItems();
-    clearAllItemFields();
 });
 
 function getAllItems() {
@@ -118,15 +127,26 @@ function getAllItems() {
     tBody.empty();
 
     // Load all values
-    for (let i = 0; i < itemDB.length; i++) {
-        let tr = $(`<tr>
-                        <td>${itemDB[i].code}</td>
-                        <td>${itemDB[i].itemName}</td>
-                        <td>${itemDB[i].unitPrice}</td>
-                        <td>${itemDB[i].qtyOnHand}</td>
-                   </tr>`);
-        tBody.append(tr);
-    }
+    $.ajax({
+        url: "http://localhost:8080/item", // The URL to the backend endpoint
+        type: "GET", // HTTP method
+        contentType: "application/json", // Expected response content type
+        success: function (items) {
+            // Iterate over the list of customers and append each to the table
+            for (let i = 0; i < items.length; i++) {
+                let tr = $(`<tr>
+                                <td>${items[i].code}</td>
+                                <td>${items[i].itemName}</td>
+                                <td>${items[i].unitPrice}</td>
+                                <td>${items[i].qtyOnHand}</td>
+                            </tr>`);
+                tBody.append(tr);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("Failed to fetch items: ", error);
+        }
+    });
 }
 
 $('#btnSearchItem').click(function () {
@@ -201,24 +221,36 @@ $('#btnDeleteItem').click(function () {
         let selectedID = $("#txtItemCode").val();
 
         // search matching ID from arraylist, and delete the object with that id
-        for (let i = 0; i < itemDB.length; i++) {
-            if (selectedID === itemDB[i].code) {
-                // Delete the object from the array
-                let b = confirm("Do you want to delete?");
-                if (b) {
-                    itemDB.splice(i, 1);
-                    loadAllItemCodes();
-                    break; // Exit the loop
-                }
-                break; // Exit the loop
+        if (selectedID) {
+            let confirmDelete = confirm("Do you want to delete this item ?");
+            if (confirmDelete) {
+                // Make an AJAX request to delete the customer
+                $.ajax({
+                    url: "http://localhost:8080/item?code=" + selectedID, // Append the customer ID to the URL
+                    type: "DELETE", // Use DELETE method
+                    success: function (response) {
+                        /*alert(response); */// Notify the user about the deletion status
+                        Swal.fire({
+                            title: "Deleted",
+                            text: "",
+                            icon: "success"
+                        })
+                        getAllItems(); // Refresh the item table
+                        clearAllItemFields(); // Clear input fields
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Failed to delete item:", error);
+                        alert("Failed to delete item!");
+                    }
+                });
             }
+        } else {
+            alert("No item selected!");
         }
     } else {
-        alert("Try again !");
+        alert("Invalid item details ! Please check your inputs .");
     }
-
     // update table
-    getAllItems();
     clearAllItemFields()
 });
 
