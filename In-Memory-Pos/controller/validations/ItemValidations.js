@@ -20,7 +20,7 @@ let itemUnitPriceField = $('#txtItemPrice');
 
 // regex patterns
 let regexItemCode = /^(I00-)[0-9]{3}$/;
-let regexItemName = /^[A-Za-z ]{5,}$/;
+let regexItemName = /^[A-Za-z ]{4,}$/;
 let regexQty = /^[0-9]+$/;
 let regexUnitPrice= /^[0-9]+([.][0-9]{2})?$/;
 

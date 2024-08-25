@@ -20,8 +20,8 @@ let customerSalaryField = $('#txtCustomerSalary');
 
 // regex patterns
 let regexCusID = /^(C00-)[0-9]{3}$/;
-let regexName = /^[A-Za-z ]{5,}$/;
-let regexAddress = /^[A-Za-z0-9 ]{8,}$/;
+let regexName = /^[A-Za-z ]{4,}$/;
+let regexAddress = /^[A-Za-z0-9 ]{5,}$/;
 let regexSalary = /^[0-9]{2,}([.][0-9]{2})?$/;
 
 //error labels

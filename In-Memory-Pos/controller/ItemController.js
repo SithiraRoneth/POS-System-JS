@@ -94,7 +94,7 @@ $('#btnUpdateItem').click(function () {
 
 
         let confirmUpdate = confirm("Do you want to update this item?");
-        if (confirmUpdate){
+        if (confirmUpdate) {
             $.ajax({
                 url: "http://localhost:8080/item", // Assuming the endpoint is /customer
                 type: "PUT", // Use PUT method
@@ -221,37 +221,94 @@ $('#btnDeleteItem').click(function () {
         let selectedID = $("#txtItemCode").val();
 
         // search matching ID from arraylist, and delete the object with that id
-        if (selectedID) {
-            let confirmDelete = confirm("Do you want to delete this item ?");
-            if (confirmDelete) {
-                // Make an AJAX request to delete the customer
-                $.ajax({
-                    url: "http://localhost:8080/item?code=" + selectedID, // Append the customer ID to the URL
-                    type: "DELETE", // Use DELETE method
-                    success: function (response) {
-                        /*alert(response); */// Notify the user about the deletion status
-                        Swal.fire({
-                            title: "Deleted",
-                            text: "",
-                            icon: "success"
-                        })
-                        getAllItems(); // Refresh the item table
-                        clearAllItemFields(); // Clear input fields
-                    },
-                    error: function (xhr, status, error) {
-                        console.error("Failed to delete item:", error);
-                        alert("Failed to delete item!");
+        /*        if (selectedID) {
+                    let confirmDelete = confirm("Do you want to delete this item ?");
+                    if (confirmDelete) {
+                        // Make an AJAX request to delete the customer
+                        $.ajax({
+                            url: "http://localhost:8080/item?code=" + selectedID, // Append the customer ID to the URL
+                            type: "DELETE", // Use DELETE method
+                            success: function (response) {
+                                /!*alert(response); *!/// Notify the user about the deletion status
+                                Swal.fire({
+                                    title: "Deleted",
+                                    text: "",
+                                    icon: "success"
+                                })
+                                getAllItems(); // Refresh the item table
+                                clearAllItemFields(); // Clear input fields
+                            },
+                            error: function (xhr, status, error) {
+                                console.error("Failed to delete item:", error);
+                                alert("Failed to delete item!");
+                            }
+                        });
                     }
-                });
-            }
+                } else {
+                    alert("No item selected!");
+                }
+            } else {
+                alert("Invalid item details ! Please check your inputs .");
+            }*/
+        if (selectedID) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't delete this item",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Make an AJAX request to delete the customer
+                    $.ajax({
+                        url: "http://localhost:8080/item?code=" + selectedID,
+                        type: "DELETE",
+                        success: function (response) {
+                            Swal.fire({
+                                position: "top-end",
+                                icon: "success",
+                                title: "Item Deleted",
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            getAllItems();
+                            clearAllItemFields();
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Failed to delete item:", error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: 'Failed to delete item!'
+                            });
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelled',
+                        text: 'Item deletion was cancelled.'
+                    });
+                }
+            });
         } else {
-            alert("No item selected!");
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Item Selected!',
+                text: 'Please select a item to delete.'
+            });
         }
     } else {
-        alert("Invalid item details ! Please check your inputs .");
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Item Details!',
+            text: 'Please check your inputs.'
+        });
     }
-    // update table
-    clearAllItemFields()
+
+    clearAllItemFields();
 });
 
 // check customer is exists

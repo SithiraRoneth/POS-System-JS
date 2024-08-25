@@ -53,7 +53,7 @@ $("#btnSaveCustomer").click(function () {
         if (!checkExistCustomer(newCustomer.id)) {
             const customerJson = JSON.stringify(newCustomer);
             console.log(customerJson)
-            loadAllCusIDs();
+            //loadAllCustomers()
 
             $.ajax({
                 url: "http://localhost:8080/customer",
@@ -105,7 +105,7 @@ $("#btnSaveCustomer").click(function () {
         })
     }
 
-    getAllCustomers();
+    //getAllCustomers();
     clearAllCustomerFields();
 
     $("#txtCustomerID").focus();
@@ -171,10 +171,12 @@ $('#btnUpdateCustomer').click(function () {
                 data: JSON.stringify(customerData), // Convert JS object to JSON
                 success: function (response) {
                     Swal.fire({
-                        title: "Updated",
-                        text: "",
-                        icon: "success"
-                    })
+                        position: "top-end",
+                        icon: "success",
+                        title: "Customer Updated",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
                     getAllCustomers(); // Refresh the customer table
                     clearAllCustomerFields(); // Clear input fields
                 },
@@ -187,6 +189,7 @@ $('#btnUpdateCustomer').click(function () {
     } else {
         alert("Invalid customer details! Please check your inputs.");
     }
+
 });
 
 
@@ -306,24 +309,35 @@ function clearAllCustomerFields() {
 
 // button delete
 
-$('#btnDeleteCustomer').click(function () {
+/*$('#btnDeleteCustomer').click(function () {
     if (checkValidCustomer()) {
         let selectedID = $("#txtCustomerID").val();
+         let deleteCustomer = Swal.fire({
+            title: "Are you sure?",
+            text: "You won't delete this customer",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        })
 
         if (selectedID) {
-            let confirmDelete = confirm("Do you want to delete this customer?");
+            let confirmDelete = confirm(deleteCustomer);
             if (confirmDelete) {
                 // Make an AJAX request to delete the customer
                 $.ajax({
                     url: "http://localhost:8080/customer?id=" + selectedID, // Append the customer ID to the URL
                     type: "DELETE", // Use DELETE method
                     success: function (response) {
-                        /*alert(response); */// Notify the user about the deletion status
+                        /!*alert(response); *!/// Notify the user about the deletion status
                         Swal.fire({
-                            title: "Deleted",
-                            text: "",
-                            icon: "success"
-                        })
+                            position: "top-end",
+                            icon: "success",
+                            title: "Customer Deleted",
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
                         getAllCustomers(); // Refresh the customer table
                         clearAllCustomerFields(); // Clear input fields
                     },
@@ -340,7 +354,72 @@ $('#btnDeleteCustomer').click(function () {
     }
     // update table
     clearAllCustomerFields()
+});*/
+$('#btnDeleteCustomer').click(function () {
+    if (checkValidCustomer()) {
+        let selectedID = $("#txtCustomerID").val();
+
+        if (selectedID) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't delete this customer",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Make an AJAX request to delete the customer
+                    $.ajax({
+                        url: "http://localhost:8080/customer?id=" + selectedID,
+                        type: "DELETE",
+                        success: function (response) {
+                            Swal.fire({
+                                position: "top-end",
+                                icon: "success",
+                                title: "Customer Deleted",
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            getAllCustomers();
+                            clearAllCustomerFields();
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Failed to delete customer:", error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: 'Failed to delete customer!'
+                            });
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelled',
+                        text: 'Customer deletion was cancelled.'
+                    });
+                }
+            });
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Customer Selected!',
+                text: 'Please select a customer to delete.'
+            });
+        }
+    } else {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Customer Details!',
+            text: 'Please check your inputs.'
+        });
+    }
+
+    clearAllCustomerFields();
 });
+
 
 // check customer is exists
 function checkExistCustomer(id) {

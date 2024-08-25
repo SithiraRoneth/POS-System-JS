@@ -42,6 +42,7 @@ function formatDate(date) {
 
 //////////////////////////////
 // load all customer IDs
+/*
 loadAllCusIDs();
 
 var selectCusElement;
@@ -82,10 +83,67 @@ selectCusElement.addEventListener("change", function () {
     }
 });
 
+*/
+
+// Assuming the customer data is fetched via an AJAX call on page load
+document.addEventListener("DOMContentLoaded", function () {
+    loadAllCustomers();
+    loadAllItemCodes()
+});
+
+function loadAllCustomers() {
+
+    // Fetch customer data from the server
+    fetch("http://localhost:8080/customer")
+        .then(response => response.json())
+        .then(customers => {
+            // Store the customers in a global variable
+            window.customerDB = customers;
+
+            // Populate the select element with customer IDs
+            populateCustomerIDs(customers);
+        })
+        .catch(error => console.error('Error fetching customer data:', error));
+}
+
+function populateCustomerIDs(customers) {
+    const selectCusElement = document.getElementById("selectCusID");
+
+    // Clear all existing options
+    while (selectCusElement.firstChild) {
+        selectCusElement.removeChild(selectCusElement.firstChild);
+    }
+
+    // Add new options from the fetched customer data
+    customers.forEach(function (customer) {
+        const optionElement = document.createElement("option");
+        optionElement.value = customer.id;
+        optionElement.textContent = customer.id;
+        selectCusElement.appendChild(optionElement);
+    });
+
+    $('#selectCusID').val('');
+}
+
+// Add event listener to the select element
+document.getElementById("selectCusID").addEventListener("change", function () {
+    const selectedCustomerId = this.value;
+    const selectedCustomer = window.customerDB.find(function (customer) {
+        return customer.id === selectedCustomerId;
+    });
+
+    if (selectedCustomer) {
+        $('#OrderCusName').val(selectedCustomer.name);
+        $('#OrderCusAddress').val(selectedCustomer.address);
+    } else {
+        $('#OrderCusName').val("");
+        $('#OrderCusAddress').val("");
+    }
+});
 
 /////////////////////////////////////////////
 // Load all item codes
-loadAllItemCodes();
+/*loadAllItemCodes();
 
 var selectCodeElement;
 
@@ -126,7 +184,58 @@ selectCodeElement.addEventListener("change", function () {
         $('#OrderItemPrice').val("");
         $('#OrderItemQtyOnH').val("");
     }
+});*/
+function loadAllItemCodes() {
+    // Assuming itemDB is available or fetched from the server
+    fetch("http://localhost:8080/item")
+        .then(response => response.json())
+        .then(items => {
+            // Store the items in a global variable
+            window.itemDB = items;
+
+            // Populate the select element with item codes
+            populateItemCodes(items);
+        })
+        .catch(error => console.error('Error fetching item data:', error));
+}
+
+function populateItemCodes(items) {
+    const selectCodeElement = document.getElementById("selectCode");
+
+    // Clear all existing options
+    while (selectCodeElement.firstChild) {
+        selectCodeElement.removeChild(selectCodeElement.firstChild);
+    }
+
+    // Add new options from the fetched item data
+    items.forEach(function (item) {
+        const optionElement = document.createElement("option");
+        optionElement.value = item.code;
+        optionElement.textContent = item.code;
+        selectCodeElement.appendChild(optionElement);
+    });
+
+    $('#selectCode').val('');
+}
+
+// Add event listener to the select element
+document.getElementById("selectCode").addEventListener("change", function () {
+    const selectedCode = this.value;
+    const selectedItem = window.itemDB.find(function (item) {
+        return item.code === selectedCode;
+    });
+
+    if (selectedItem) {
+        $('#OrderItemName').val(selectedItem.itemName);
+        $('#OrderItemPrice').val(selectedItem.unitPrice);
+        $('#OrderItemQtyOnH').val(selectedItem.qtyOnHand);
+    } else {
+        $('#OrderItemName').val("");
+        $('#OrderItemPrice').val("");
+        $('#OrderItemQtyOnH').val("");
+    }
 });
+
 
 ///////////////////////////////////////////////
 // Calculate total
